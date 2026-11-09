@@ -1,0 +1,594 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b14">
+<title>MANIAC COIN</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root {
+  --bg:#080b14;
+  --panel:#111a2a;
+  --gold:#f5c451;
+  --muted:#9ba9bd;
+  --border:#26344b;
+  --green:#62e6a5;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:radial-gradient(ellipse at top,#1b3150,transparent 50%),var(--bg);
+  color:white;
+  font-family:Arial,sans-serif;
+}
+.container {
+  max-width:700px;
+  margin:auto;
+  padding:20px 15px 40px;
+}
+header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.logo {
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ffe69a,#c78a18);
+  display:grid;
+  place-items:center;
+  color:#241600;
+  font-size:25px;
+  font-weight:bold;
+}
+h1 {font-size:19px;letter-spacing:2px}
+h2 {font-size:17px}
+.small {font-size:12px;color:var(--muted)}
+.card {
+  background:linear-gradient(145deg,#141f31,#0f1725);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:15px;
+}
+.balance-card {text-align:center;padding:28px 15px}
+.gold {color:var(--gold)}
+.balance {
+  font-size:48px;
+  font-weight:bold;
+  margin:10px 0;
+}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:20px;
+}
+.stat {
+  background:#ffffff09;
+  border-radius:12px;
+  padding:12px 5px;
+}
+.stat b {display:block;font-size:17px}
+.stat span {font-size:10px;color:var(--muted)}
+.mine-circle {
+  width:145px;
+  height:145px;
+  border-radius:50%;
+  border:2px solid var(--gold);
+  background:radial-gradient(circle,#35465d,#101827);
+  margin:20px auto;
+  display:grid;
+  place-items:center;
+  font-size:55px;
+  cursor:pointer;
+}
+.timer {
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+  margin:12px;
+  font-variant-numeric:tabular-nums;
+}
+button {
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:14px;
+  font-size:14px;
+  font-weight:bold;
+  background:linear-gradient(100deg,#ffe08a,#e8ad35);
+  color:#111;
+  cursor:pointer;
+}
+button.secondary {
+  background:#1c2a40;
+  color:white;
+  border:1px solid var(--border);
+}
+button:disabled {opacity:.45}
+.row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.row button {width:auto;min-width:110px}
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.task {
+  background:#ffffff09;
+  padding:13px;
+  border-radius:12px;
+}
+.progress {
+  height:8px;
+  background:#26344b;
+  border-radius:10px;
+  overflow:hidden;
+  margin:12px 0;
+}
+.progress div {
+  height:100%;
+  background:var(--gold);
+  width:0;
+}
+.profile {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.avatar {
+  width:43px;
+  height:43px;
+  background:#35465d;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+}
+.referral {
+  color:var(--gold);
+  overflow-wrap:anywhere;
+  font-size:13px;
+}
+footer {
+  text-align:center;
+  color:#68788f;
+  font-size:11px;
+  padding:20px;
+}
+@media(max-width:420px) {
+  .balance {font-size:40px}
+  .grid {grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <div class="brand">
+    <div class="logo">M</div>
+    <div>
+      <h1>MANIAC COIN</h1>
+      <div class="small">MINING ECOSYSTEM</div>
+    </div>
+  </div>
+  <div class="small" id="connection">Connecting...</div>
+</header>
+
+<!-- DASHBOARD -->
+<section class="card balance-card">
+  <div class="gold">TOTAL BALANCE</div>
+  <div class="balance" id="balance">0.00</div>
+  <div class="gold">MNC</div>
+
+  <div class="stats">
+    <div class="stat">
+      <b id="mined">0.00</b>
+      <span>MINED</span>
+    </div>
+    <div class="stat">
+      <b id="adEarned">0.00</b>
+      <span>AD REWARDS</span>
+    </div>
+    <div class="stat">
+      <b id="streak">0</b>
+      <span>DAY STREAK</span>
+    </div>
+  </div>
+</section>
+
+<!-- MINING -->
+<section class="card">
+  <div class="row">
+    <h2>⛏️ Manual Mining</h2>
+    <span class="gold">8 HOURS</span>
+  </div>
+
+  <div class="mine-circle" id="mineIcon">🪙</div>
+
+  <div class="small" style="text-align:center" id="mineStatus">
+    Start your mining session
+  </div>
+
+  <div class="timer" id="mineTimer">08:00:00</div>
+
+  <button id="mineButton">START MINING</button>
+
+  <p class="small">
+    Complete an 8-hour mining cycle to receive the demo reward.
+  </p>
+</section>
+
+<!-- DAILY TASK -->
+<section class="card">
+  <h2>🎯 Daily Rewards</h2>
+
+  <div class="row">
+    <div>
+      <b>Daily Check-in</b>
+      <div class="small">Maintain your daily streak</div>
+    </div>
+    <button class="secondary" id="dailyButton">
+      CLAIM
+    </button>
+  </div>
+</section>
+
+<!-- ADS -->
+<section class="card">
+  <h2>📺 Watch Ads & Earn</h2>
+
+  <div class="row">
+    <b><span id="adsLeft">20</span> / 20 Ads Remaining</b>
+    <span class="gold">MONETAG</span>
+  </div>
+
+  <div class="progress">
+    <div id="adProgress"></div>
+  </div>
+
+  <button class="secondary" id="adButton">
+    MONETAG NOT CONNECTED
+  </button>
+
+  <p class="small">
+    Monetag integration placeholder. No ads or rewards are
+    activated until the official SDK and secure reward
+    verification are configured.
+  </p>
+</section>
+
+<!-- REFERRALS -->
+<section class="card">
+  <h2>👥 Invite Friends</h2>
+
+  <div class="profile">
+    <div class="avatar" id="avatar">M</div>
+    <div>
+      <b id="username">Telegram User</b>
+      <div class="small" id="telegramId">Preview mode</div>
+    </div>
+  </div>
+
+  <p class="small">Your referral link:</p>
+  <div class="referral" id="referralLink"></div>
+
+  <br>
+  <button class="secondary" id="shareButton">
+    INVITE FRIENDS
+  </button>
+</section>
+
+<!-- LAUNCH COUNTDOWN -->
+<section class="card">
+  <h2>🚀 MANIAC COIN LAUNCH</h2>
+  <div class="timer" id="launchTimer">Loading...</div>
+  <div class="small" style="text-align:center">
+    Target: 9 March 2027
+  </div>
+</section>
+
+<footer>
+  MANIAC COIN • VERSION 0.1<br>
+  DEMO PROTOTYPE
+</footer>
+
+</div>
+
+<script>
+"use strict";
+
+/* CONFIGURATION */
+
+const CONFIG = {
+  botUsername: "maniac_coin_bot",
+  miningReward: 5,
+  miningHours: 8,
+  dailyReward: 1,
+  maxAds: 20,
+  launchDate: "2027-03-09T00:00:00+06:00"
+};
+
+const tg = window.Telegram?.WebApp;
+
+try {
+  tg?.ready();
+  tg?.expand();
+} catch(e) {}
+
+/* DATABASE - DEMO ONLY */
+
+const today = () => new Date().toISOString().slice(0,10);
+
+function loadData() {
+  try {
+    return JSON.parse(
+      localStorage.getItem("maniacCoinDemo") || "{}"
+    );
+  } catch(e) {
+    return {};
+  }
+}
+
+let data = Object.assign({
+  balance:0,
+  mined:0,
+  adEarned:0,
+  streak:0,
+  lastCheckin:"",
+  miningEnd:0,
+  adsDate:today(),
+  adsUsed:0
+},loadData());
+
+function save() {
+  localStorage.setItem(
+    "maniacCoinDemo",
+    JSON.stringify(data)
+  );
+}
+
+function format(n) {
+  return Number(n || 0).toFixed(2);
+}
+
+/* TELEGRAM PROFILE */
+
+const user = tg?.initDataUnsafe?.user;
+
+document.getElementById("connection").textContent =
+  user ? "TELEGRAM CONNECTED" : "BROWSER PREVIEW";
+
+document.getElementById("username").textContent =
+  user
+  ? [user.first_name,user.last_name].filter(Boolean).join(" ")
+  : "Preview User";
+
+document.getElementById("telegramId").textContent =
+  user ? "Telegram ID: " + user.id : "Open inside Telegram";
+
+document.getElementById("avatar").textContent =
+  user?.first_name?.[0]?.toUpperCase() || "M";
+
+const referral =
+  "https://t.me/" + CONFIG.botUsername +
+  "?start=" + encodeURIComponent(user?.id || "demo");
+
+document.getElementById("referralLink").textContent = referral;
+
+/* DASHBOARD */
+
+function render() {
+  if(data.adsDate !== today()) {
+    data.adsDate = today();
+    data.adsUsed = 0;
+    save();
+  }
+
+  document.getElementById("balance").textContent =
+    format(data.balance);
+
+  document.getElementById("mined").textContent =
+    format(data.mined);
+
+  document.getElementById("adEarned").textContent =
+    format(data.adEarned);
+
+  document.getElementById("streak").textContent =
+    data.streak;
+
+  const remaining = Math.max(
+    0, CONFIG.maxAds - data.adsUsed
+  );
+
+  document.getElementById("adsLeft").textContent =
+    remaining;
+
+  document.getElementById("adProgress").style.width =
+    (data.adsUsed / CONFIG.maxAds * 100) + "%";
+
+  const dailyButton =
+    document.getElementById("dailyButton");
+
+  dailyButton.disabled = data.lastCheckin === today();
+
+  dailyButton.textContent =
+    dailyButton.disabled ? "CLAIMED" : "CLAIM";
+
+  updateMining();
+}
+
+/* MINING */
+
+function updateMining() {
+  const left = Math.max(0,data.miningEnd - Date.now());
+
+  if(data.miningEnd && left === 0) {
+    data.balance += CONFIG.miningReward;
+    data.mined += CONFIG.miningReward;
+    data.miningEnd = 0;
+    save();
+  }
+
+  const seconds = Math.ceil(
+    Math.max(0,data.miningEnd - Date.now()) / 1000
+  );
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor(seconds % 3600 / 60);
+  const secs = seconds % 60;
+
+  document.getElementById("mineTimer").textContent =
+    [hours,minutes,secs]
+    .map(x => String(x).padStart(2,"0"))
+    .join(":");
+
+  const button = document.getElementById("mineButton");
+
+  button.disabled = data.miningEnd > Date.now();
+
+  button.textContent = button.disabled
+    ? "MINING IN PROGRESS"
+    : "START MINING";
+
+  document.getElementById("mineStatus").textContent =
+    button.disabled
+    ? "Your mining session is active"
+    : "Start your next mining session";
+
+  document.getElementById("balance").textContent =
+    format(data.balance);
+
+  document.getElementById("mined").textContent =
+    format(data.mined);
+}
+
+document.getElementById("mineButton")
+.addEventListener("click",() => {
+
+  if(data.miningEnd > Date.now()) return;
+
+  data.miningEnd =
+    Date.now() + CONFIG.miningHours * 60 * 60 * 1000;
+
+  save();
+  render();
+});
+
+document.getElementById("mineIcon")
+.addEventListener("click",() => {
+  document.getElementById("mineButton").click();
+});
+
+/* DAILY REWARD */
+
+document.getElementById("dailyButton")
+.addEventListener("click",() => {
+
+  if(data.lastCheckin === today()) return;
+
+  const yesterday = new Date(Date.now()-86400000)
+    .toISOString().slice(0,10);
+
+  data.streak =
+    data.lastCheckin === yesterday
+    ? data.streak + 1
+    : 1;
+
+  data.lastCheckin = today();
+  data.balance += CONFIG.dailyReward;
+
+  save();
+  render();
+});
+
+/* MONETAG PLACEHOLDER */
+
+document.getElementById("adButton")
+.addEventListener("click",() => {
+  alert(
+    "Monetag is not configured yet. " +
+    "No advertisement was watched and no reward was issued."
+  );
+});
+
+/*
+MONETAG INTEGRATION:
+Add the official Monetag SDK and zone configuration here.
+Only credit rewards after the backend verifies the
+completed rewarded-ad event.
+*/
+
+/* REFERRAL SHARING */
+
+document.getElementById("shareButton")
+.addEventListener("click",() => {
+
+  const url =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent(referral) +
+    "&text=" +
+    encodeURIComponent("Join me on MANIAC COIN!");
+
+  if(tg?.openTelegramLink) {
+    tg.openTelegramLink(url);
+  } else if(navigator.clipboard) {
+    navigator.clipboard.writeText(referral)
+      .then(() => alert("Referral link copied!"));
+  } else {
+    alert(referral);
+  }
+});
+
+/* LAUNCH COUNTDOWN */
+
+function updateLaunch() {
+  const distance =
+    new Date(CONFIG.launchDate).getTime() - Date.now();
+
+  if(distance <= 0) {
+    document.getElementById("launchTimer").textContent =
+      "LAUNCH DATE REACHED";
+    return;
+  }
+
+  const days = Math.floor(distance / 86400000);
+  const hours = Math.floor(distance % 86400000 / 3600000);
+  const minutes = Math.floor(distance % 3600000 / 60000);
+  const seconds = Math.floor(distance % 60000 / 1000);
+
+  document.getElementById("launchTimer").textContent =
+    days + "d " + hours + "h " +
+    minutes + "m " + seconds + "s";
+}
+
+/* START APPLICATION */
+
+render();
+updateLaunch();
+
+setInterval(() => {
+  updateMining();
+  updateLaunch();
+},1000);
+
+</script>
+</body>
+</html>
